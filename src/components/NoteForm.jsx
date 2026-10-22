@@ -1,47 +1,113 @@
-import { useState } from 'react';
+import { useEffect, useState } from "react";
 
-export default function NoteForm({ onAddNote }) {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+const emptyForm = {
+  title: "",
+  content: "",
+  language: "JavaScript",
+  tags: "",
+};
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
-    
-    onAddNote({ id: Date.now(), title, content });
-    setTitle('');
-    setContent('');
-  };
+export default function NoteForm({ initialNote, onSave, onCancel }) {
+  const [form, setForm] = useState(emptyForm);
+
+  useEffect(() => {
+    if (initialNote) {
+      setForm({
+        title: initialNote.title,
+        content: initialNote.content,
+        language: initialNote.language,
+        tags: (initialNote.tags || []).join(", "),
+      });
+    } else {
+      setForm(emptyForm);
+    }
+  }, [initialNote]);
+
+  function handleChange(event) {
+    const { name, value } = event.target;
+
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    if (!form.title.trim() || !form.content.trim()) {
+      return;
+    }
+
+    onSave({
+      title: form.title.trim(),
+      content: form.content.trim(),
+      language: form.language,
+      tags: form.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+    });
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-rose-50 border border-rose-100 p-6 rounded-xl shadow-lg mb-8">
-      <h2 className="text-lg font-semibold mb-4 text-black">Create a New Snippet / Note</h2>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-black mb-1">Title</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g., React Hooks Cheat Sheet"
-            className="w-full bg-white border border-pink-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-black mb-1">Content / Code Snippet</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Write your note or code here..."
-            rows="3"
-            className="w-full bg-white border border-pink-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-black font-mono"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-black hover:bg-white text-white hover:text-black font-medium py-2 rounded-lg transition text-sm shadow-md"
+    <form className="note-form" onSubmit={handleSubmit}>
+      <h2>{initialNote ? "Edit note" : "Create a note"}</h2>
+
+      <label>
+        Title
+        <input
+          name="title"
+          value={form.title}
+          onChange={handleChange}
+          placeholder="e.g. React useState"
+          required
+        />
+      </label>
+
+      <label>
+        Programming language
+        <select
+          name="language"
+          value={form.language}
+          onChange={handleChange}
         >
-          Add Note
+          {["JavaScript", "React", "Node.js", "Python", "CSS", "Other"].map(
+            (language) => (
+              <option key={language}>{language}</option>
+            )
+          )}
+        </select>
+      </label>
+
+      <label>
+        Explanation or code snippet
+        <textarea
+          name="content"
+          value={form.content}
+          onChange={handleChange}
+          placeholder="Write what you learned..."
+          rows={5}
+          required
+        />
+      </label>
+
+      <label>
+        Tags (comma-separated)
+        <input
+          name="tags"
+          value={form.tags}
+          onChange={handleChange}
+          placeholder="hooks, beginner, revision"
+        />
+      </label>
+
+      <div className="form-actions">
+        <button className="primary-button" type="submit">
+          Save note
+        </button>
+        <button className="secondary-button" type="button" onClick={onCancel}>
+          Cancel
         </button>
       </div>
     </form>

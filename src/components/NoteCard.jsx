@@ -1,20 +1,51 @@
-export default function NoteCard({ note, onDelete }) {
+import { Heart, Pencil, Trash2 } from "lucide-react";
+
+export default function NoteCard({
+  note,
+  onEdit,
+  onDelete,
+  onFavorite,
+}) {
   return (
-    <div className="bg-pink-200 border border-pink-300 p-5 rounded-xl shadow-md flex flex-col justify-between hover:border-pink-400 transition">
-      <div>
-        <h3 className="text-md font-bold text-black mb-2">{note.title}</h3>
-        <p className="text-sm text-black whitespace-pre-wrap font-mono bg-pink-650 p-3 rounded-lg border border-pink-300/60">
-          {note.content}
-        </p>
-      </div>
-      <div className="mt-4 flex justify-end">
+    <article className="note-card">
+      <div className="note-top">
+        <span className="tag">{note.language}</span>
+
         <button
-          onClick={() => onDelete(note.id)}
-          className="text-xs text-red-400 hover:text-red-300 font-medium transition"
+          className="icon-button"
+          aria-label="Toggle favorite"
+          onClick={() => onFavorite(note._id)}
         >
-          Delete
+          <Heart
+            size={19}
+            fill={note.favorite ? "currentColor" : "none"}
+          />
         </button>
       </div>
-    </div>
+
+      <h3>{note.title}</h3>
+      <p className="note-content">{note.content}</p>
+
+      <div className="note-tags">
+        {(note.tags || []).map((tag) => (
+          <span key={tag} className="small-tag">
+            #{tag}
+          </span>
+        ))}
+      </div>
+
+      <div className="note-actions">
+        <button onClick={() => onEdit(note)}>
+          <Pencil size={15} /> Edit
+        </button>
+
+        <button
+          className="delete-action"
+          onClick={() => onDelete(note._id)}
+        >
+          <Trash2 size={15} /> Delete
+        </button>
+      </div>
+    </article>
   );
 }
